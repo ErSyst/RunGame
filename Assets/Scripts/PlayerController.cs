@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class PlayerController : MonoBehaviour
 {
     public EquationManager equationManager;
+    public WordManager wordManager;
     private CharacterController controller;
     private Vector3 dir;
     [SerializeField] private int speed;
@@ -21,55 +22,64 @@ public class PlayerController : MonoBehaviour
     private int lineToMove = 1;
     public float lineDistance = 4;
 
+    private bool isMathLevel;
+
     private void Awake()
     {
         equationManager = GetComponent<EquationManager>();
-    }
-    void Start()
-    {
-        equationManager.GenerateRandomEquation();
-        score = 0;
+        wordManager = GetComponent<WordManager>();
         controller = GetComponent<CharacterController>();
         anim = GetComponent<Animator>();
+
+        if (scoreText == null)
+        {
+            Debug.LogError("ScoreText is not assigned in the inspector");
+        }
+        if (wordManager.wordText == null)
+        {
+            Debug.LogError("WordText is not assigned in the WordManager inspector");
+        }
+    }
+
+    void Start()
+    {
+        isMathLevel = Random.Range(0, 2) == 0;
+        if (isMathLevel)
+        {
+            equationManager.GenerateRandomEquation();
+        }
+        else
+        {
+            wordManager.GenerateRandomWord();
+        }
+        score = 0;
+        UpdateScore();
     }
 
     private void Update()
     {
-
-        if (SwipeController.swipeRight)
+        if (SwipeController.swipeRight && lineToMove < 2)
         {
-            if (lineToMove < 2)
-            {
-                lineToMove++;
-            }
+            lineToMove++;
         }
 
-        if (SwipeController.swipeLeft)
+        if (SwipeController.swipeLeft && lineToMove > 0)
         {
-            if (lineToMove > 0)
-            {
-                lineToMove--;
-            }
+            lineToMove--;
         }
 
-        if (SwipeController.swipeUp)
+        if (SwipeController.swipeUp && controller.isGrounded)
         {
-            if (controller.isGrounded)
-            {
-                Jump();
-            }
+            Jump();
             anim.SetInteger("Stage", 1);
         }
         if (!controller.isGrounded)
         {
             anim.SetInteger("Stage", 2);
         }
-        if (controller.isGrounded)
+        if (controller.isGrounded && anim.GetInteger("Stage") == 2)
         {
-            if (anim.GetInteger("Stage") == 2)
-            {
-                anim.SetInteger("Stage", 3);
-            }
+            anim.SetInteger("Stage", 3);
         }
 
         Vector3 targetPosition = transform.position.z * transform.forward + transform.position.y * transform.up;
@@ -81,20 +91,8 @@ public class PlayerController : MonoBehaviour
         {
             targetPosition += Vector3.right * lineDistance / 2;
         }
-        if (transform.position == targetPosition)
-        {
-            return;
-        }
-        Vector3 diff = targetPosition - transform.position;
-        Vector3 moveDir = diff.normalized * 25 * Time.deltaTime;
-        if (moveDir.sqrMagnitude < diff.sqrMagnitude)
-        {
-            controller.Move(moveDir);
-        }
-        else
-        {
-            controller.Move(diff);
-        }
+        Vector3 moveDir = (targetPosition - transform.position).normalized * 25 * Time.deltaTime;
+        controller.Move(moveDir.sqrMagnitude < (targetPosition - transform.position).sqrMagnitude ? moveDir : targetPosition - transform.position);
     }
 
     private void Jump()
@@ -106,60 +104,106 @@ public class PlayerController : MonoBehaviour
     {
         dir.z = speed;
         dir.y += gravity * Time.fixedDeltaTime;
-        controller.Move(dir *  Time.fixedDeltaTime);
+        controller.Move(dir * Time.fixedDeltaTime);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag == "NonGate")
+        if (isMathLevel)
         {
-            equationManager.GenerateRandomEquation();
+            HandleMathLevel(other);
         }
-        else if (other.gameObject.tag == "CorrectGate")
+        else
         {
-            if (equationManager.result == equationManager.currentAnswer)
-            {
-                score++;
-                scoreText.text = score.ToString();
-            }
-            else
-            {
-                if (score > minScore)
-                {
-                    score--;
-                    scoreText.text = score.ToString();
-                }
-                if (speed < maxSpeed)
-                {
-                    speed += 5;
-                }
-            }
-            equationManager.GenerateRandomEquation();
+            HandleWordLevel(other);
         }
-        else if (other.gameObject.tag == "UnCorrectGate")
-        {
-            if (equationManager.result == equationManager.currentAnswer)
-            {
-                if (score > minScore)
-                {
-                    score--;
-                    scoreText.text = score.ToString();
-                }
-                if (speed < maxSpeed)
-                {
-                    speed += 5;
-                }
-            }
-            else
-            {
-                score++;
-                scoreText.text = score.ToString();
-            }
-            equationManager.GenerateRandomEquation();
-        }
+
         if (highScore < score)
         {
             highScore = score;
         }
+    }
+
+    private void HandleMathLevel(Collider other)
+    {
+        if (other.gameObject.CompareTag("NonGate"))
+        {
+            equationManager.GenerateRandomEquation();
+        }
+        else if (other.gameObject.CompareTag("CorrectGate"))
+        {
+            if (equationManager.result == equationManager.currentAnswer)
+            {
+                score++;
+            }
+            else
+            {
+                DecreaseScoreAndIncreaseSpeed();
+            }
+            equationManager.GenerateRandomEquation();
+        }
+        else if (other.gameObject.CompareTag("UnCorrectGate"))
+        {
+            if (equationManager.result != equationManager.currentAnswer)
+            {
+                score++;
+            }
+            else
+            {
+                DecreaseScoreAndIncreaseSpeed();
+            }
+            equationManager.GenerateRandomEquation();
+        }
+        UpdateScore();
+    }
+
+    private void HandleWordLevel(Collider other)
+    {
+        if (other.gameObject.CompareTag("NonGate"))
+        {
+            wordManager.GenerateRandomWord();
+        }
+        else if (other.gameObject.CompareTag("CorrectGate"))
+        {
+            if (wordManager.CheckWord(true))
+            {
+                score++;
+            }
+            else
+            {
+                DecreaseScoreAndIncreaseSpeed();
+            }
+            wordManager.GenerateRandomWord();
+        }
+        else if (other.gameObject.CompareTag("UnCorrectGate"))
+        {
+            if (wordManager.CheckWord(false))
+            {
+                score++;
+            }
+            else
+            {
+                DecreaseScoreAndIncreaseSpeed();
+            }
+            wordManager.GenerateRandomWord();
+        }
+        UpdateScore();
+    }
+
+    private void DecreaseScoreAndIncreaseSpeed()
+    {
+        if (score > minScore)
+        {
+            score--;
+        }
+        if (speed < maxSpeed)
+        {
+            speed += 5;
+        }
+    }
+
+    private void UpdateScore()
+    {
+        scoreText.text = score.ToString();
     }
 }

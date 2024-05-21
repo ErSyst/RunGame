@@ -803,6 +803,7 @@ GameObject:
   - component: {fileID: 851739330}
   - component: {fileID: 851739329}
   - component: {fileID: 851739328}
+  - component: {fileID: 851739331}
   m_Layer: 5
   m_Name: Equations
   m_TagString: Untagged
@@ -886,6 +887,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 851739326}
   m_CullTransparentMesh: 1
+--- !u!114 &851739331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 851739326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee8985d22b3fa5947b5e392c33f4f48c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wordText: {fileID: 851739329}
 --- !u!1 &954402684
 GameObject:
   m_ObjectHideFlags: 0
@@ -1171,6 +1185,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1968476592218994, guid: 313ad0ef31f75b84f9f31c0528802fdd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1295313897}
+    - targetCorrespondingSourceObject: {fileID: 1968476592218994, guid: 313ad0ef31f75b84f9f31c0528802fdd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1295313899}
     - targetCorrespondingSourceObject: {fileID: 1258019779867072, guid: 313ad0ef31f75b84f9f31c0528802fdd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1470855169}
@@ -1261,6 +1278,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equationManager: {fileID: 0}
+  wordManager: {fileID: 0}
   speed: 25
   jumpForce: 10
   gravity: -20
@@ -1312,6 +1330,19 @@ MonoBehaviour:
   currentAnswer: 0
   result: 0
   equationText: {fileID: 851739329}
+--- !u!114 &1295313899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1295313890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee8985d22b3fa5947b5e392c33f4f48c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wordText: {fileID: 851739329}
 --- !u!1 &1346098128
 GameObject:
   m_ObjectHideFlags: 0
