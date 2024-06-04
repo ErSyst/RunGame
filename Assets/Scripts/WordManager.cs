@@ -40,7 +40,17 @@ public class WordManager : MonoBehaviour
         currentWord = words[Random.Range(0, words.Count)];
         isWordCorrect = Random.Range(0, 2) == 0;
 
-        displayedWord = isWordCorrect ? currentWord : MakeMistake(currentWord);
+        if (isWordCorrect)
+        {
+            displayedWord = currentWord;
+        }
+        else
+        {
+            displayedWord = MakeMistake(currentWord);
+        }
+
+        Debug.Log($"Generated word: {currentWord}, Displayed word: {displayedWord}, Is correct: {isWordCorrect}");
+
         wordText.text = displayedWord;
     }
 
@@ -54,12 +64,17 @@ public class WordManager : MonoBehaviour
         {
             wordChars[mistakeIndex] = commonMistakes[originalChar];
         }
+        else
+        {
+            wordChars[mistakeIndex] = (char)('à' + Random.Range(0, 33));
+        }
 
         return new string(wordChars);
     }
 
     public bool CheckWord(bool playerAnswer)
     {
+        Debug.Log($"Player answered: {playerAnswer}, Correct answer: {isWordCorrect}");
         return playerAnswer == isWordCorrect;
     }
 }
